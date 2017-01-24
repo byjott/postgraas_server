@@ -17,7 +17,7 @@ def create_db_container():
     except ValueError as e:
         print "warning container already exists"
         postgraas_db = pg.get_container_by_name('postgraas_master_db')
-        db_credentials['container_id'] = postgraas_db['Id']
+        db_credentials['container_id'] = postgraas_db.id
     return db_credentials
 
 
