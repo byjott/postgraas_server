@@ -10,7 +10,7 @@ this_dir = os.path.dirname(__file__)
 
 @pytest.yield_fixture
 def cov_runner():
-    # pretty hacky fixture to measure coverage of python scripts started as:
+    # pretty hacky fixture to measure coverage of python scripts started as subprocess.
     # * run the script via 'coverage run', not via python
     # * move the created .coverage files two to ../.. so they are merged with the others
     check_call("rm -f .coverage.*", shell=True, cwd=this_dir)
