@@ -7,8 +7,7 @@ import postgraas_server.configuration as configuration
 from postgraas_server.create_app import create_app
 import postgraas_server.postgres_instance_driver as pid
 import docker
-import socket
-from docker.errors import APIError
+from .utils import wait_for_postgres_listening
 
 
 class TestPostgraasApi(unittest.TestCase):
@@ -111,7 +110,8 @@ class TestPostgraasApi(unittest.TestCase):
         headers = {'Content-Type': 'application/json'}
         result = self.app.post('/api/v2/postgraas_instances', headers=headers, data=json.dumps(db_credentials))
         created_db = json.loads(result.data)
-        assert pid.wait_for_postgres_listening(created_db['container_id'])
+        wait_success = wait_for_postgres_listening(created_db['container_id'])
+        self.assertTrue(wait_success, 'postgres did not come up within 10s (or unexpected docker image log output)')
         delete_result = self.app.delete('/api/v2/postgraas_instances/' + str(created_db["postgraas_instance_id"]),
                                         data=json.dumps({'db_pwd': 'wrong_password'}), headers=headers)
         deleted_db = json.loads(delete_result.data)
@@ -145,7 +145,8 @@ class TestPostgraasApi(unittest.TestCase):
         headers = {'Content-Type': 'application/json'}
         result = self.app.post('/api/v2/postgraas_instances', headers=headers, data=json.dumps(db_credentials))
         created_db = json.loads(result.data)
-        assert pid.wait_for_postgres_listening(created_db['container_id'])
+        wait_success = wait_for_postgres_listening(created_db['container_id'])
+        self.assertTrue(wait_success, 'postgres did not come up within 10s (or unexpected docker image log output)')
 
         def raise_not_found(*args, **kwargs):
             raise docker.errors.NotFound('raise for testing from mock')
@@ -217,7 +218,7 @@ class TestPostgraasApi(unittest.TestCase):
             u'db_name': u'test_return_postgres_instance',
             u'username': u'db_user',
             u'password': u'',
-            u'hostname': socket.getfqdn(),
+            u'hostname': u'not imlemented yet',
             u'id': created_db_id,
         }
         self.assertDictEqual(actual_data, expected)

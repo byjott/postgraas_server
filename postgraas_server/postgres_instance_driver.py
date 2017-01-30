@@ -2,11 +2,11 @@ __author__ = 'sebastian neubauer'
 import docker
 import psycopg2
 import time
-import socket
 
 
 def get_hostname():
-    return socket.getfqdn()
+    # mmmh, how should this be done? need nome kind ouf routing...
+    return 'not imlemented yet'
 
 
 def _docker_client():
@@ -63,32 +63,6 @@ def create_postgres_instance(postgraas_instance_name, connection_dict):
 def delete_postgres_instance(container_id):
     c = _docker_client()
     c.containers.get(container_id).remove(force=True)
-
-
-def wait_for_postgres_listening(container_id, timeout=10):
-    """
-    Inspect/follow the output of the docker container logs until encountering the
-    message from postgres that it accepts connections.
-
-    Raises in case the container does not exist.
-
-    Caveat: this check is specific to the used docker image.
-    Tested for current postgres:9.4 image.
-
-    :returns: boolean, whether the message has been (True), or the timeout has been hit (False).
-    """
-    c = _docker_client()
-    cont = c.containers.get(container_id)
-    for i in range(max(int(timeout * 10), 1)):
-        # not very efficient to always gather all logs, but this method
-        # is currently used for testing only, so it should be OK.
-        output = cont.logs(stdout=True, stderr=True)
-        # the startup script in the docker image starts postgres twice,
-        # so wait for the second start:
-        if output.count('database system is ready to accept connections') >= 2:
-            return True
-        time.sleep(0.1)
-    return False   # pragma: no cover
 
 
 def wait_for_postgres(dbname, user, password, host, port):
